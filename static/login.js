@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             if(data.logged_in) {
-                window.location.href = '/dashboard'; // Adjust as needed
+                window.location.href = '/dashboard'; 
             } else {
                 alert('Login failed. Please try again.');
             }

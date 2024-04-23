@@ -30,9 +30,10 @@ def index():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
+        data = request.get_json()
+        username = data['username']
+        password = data['password']
+        email = data['email']
         conn = get_db_connection()
         try:
             conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
