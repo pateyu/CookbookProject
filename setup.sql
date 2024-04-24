@@ -60,17 +60,22 @@ CREATE TABLE prefers (
 )
 
 CREATE TABLE contains (
-
+    CookBook_ID INT FOREIGN KEY
 )
 
 CREATE TABLE deletes (
+    Admin_id INT FOREGIN KEY
+    recipe_name VARCHAR(80) FOREIGN KEY
 
 )
 
 CREATE TABLE creates (
-
-)
+    User_ID INT FOREIGN KEY 
+    recipe_name VARCHAR(80) FOREIGN KEY
+);
 
 CREATE TABLE rates (
-
-)
+    User_ID INTEGER FOREIGN KEY NOT NULL
+    recipe_name VARCHAR(80) FOREIGN KEY NOT NULL
+    user_rating INTEGER CHECK (BETWEEN 0 AND 5)
+);
