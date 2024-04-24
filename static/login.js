@@ -1,26 +1,28 @@
 document.addEventListener("DOMContentLoaded", function() {
     const loginForm = document.getElementById('loginForm');
     loginForm.addEventListener('submit', function(event) {
-        event.preventDefault();
+        event.preventDefault();  // Prevent the default form submission
         const formData = new FormData(loginForm);
-        const data = {};
-        formData.forEach((value, key) => {data[key] = value;});
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password')
+        };
+
         fetch('/login', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',  // This should specify the content type as JSON.
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
-        .then(data => {
-            if(data.logged_in) {
-                window.location.href = data.redirect;  // Redirect based on server response
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/settings';  // Redirect on successful login
             } else {
-                alert('Login failed. Please try again.');
+                alert('Login failed. Please check your username and password.');
             }
         })
-        .catch((error) => {
+        .catch(error => {
             console.error('Error:', error);
             alert('An error occurred. Please try again later.');
         });
