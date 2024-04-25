@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Generates a random key for the session
+app.secret_key = os.urandom(24)  
 
 DATABASE = 'database.db'
 
@@ -67,14 +67,22 @@ def settings():
 
 @app.route('/change_username', methods=['POST'])
 def change_username():
-    username = request.form['username']
+    new_username = request.form['username']
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'message': 'User not logged in'}), 403
+    
     conn = get_db_connection()
     try:
-        conn.execute('UPDATE account SET username = ? WHERE id = ?', (username, user_id))
+        # Update account table
+        conn.execute('UPDATE account SET username = ? WHERE id = ?', (new_username, user_id))
         conn.commit()
+        
+        # Check if the user is an admin and update the admin table
+        if conn.execute('SELECT Account_ID FROM admin WHERE Account_ID = ?', (user_id,)).fetchone():
+            conn.execute('UPDATE admin SET admin_name = ? WHERE Account_ID = ?', (new_username, user_id))
+            conn.commit()
+
         response = {'message': 'Username successfully updated'}
         status_code = 200
     except Exception as e:
@@ -83,7 +91,9 @@ def change_username():
         status_code = 500
     finally:
         conn.close()
+
     return jsonify(response), status_code
+
 
 
 @app.route('/change_password', methods=['POST'])
@@ -135,7 +145,6 @@ def change_email():
 
     return jsonify(response), status_code
 
-
 @app.route('/update_security_key', methods=['POST'])
 def update_security_key():
     security_key = request.form['security_key']
@@ -149,9 +158,18 @@ def update_security_key():
             # First check if the user is already an admin
             admin_check = conn.execute('SELECT Account_ID FROM admin WHERE Account_ID = ?', (user_id,)).fetchone()
             if not admin_check:
-                conn.execute('INSERT INTO admin (Account_ID) VALUES (?)', (user_id,))
-                conn.commit()
-                response = {'message': 'User granted admin privileges'}
+                # Fetch username from the account table
+                user_info = conn.execute('SELECT username FROM account WHERE id = ?', (user_id,)).fetchone()
+                if user_info:
+                    username = user_info['username']
+                    # Insert into admin table including username
+                    conn.execute('INSERT INTO admin (Account_ID, admin_name) VALUES (?, ?)', (user_id, username))
+                    conn.commit()
+                    response = {'message': 'User granted admin privileges'}
+                else:
+                    response = {'message': 'User not found'}
+                    status_code = 404
+                    return jsonify(response), status_code
             else:
                 response = {'message': 'User already has admin privileges'}
             status_code = 200
@@ -166,7 +184,6 @@ def update_security_key():
         status_code = 400
 
     return jsonify(response), status_code
-
 
 if __name__ == '__main__':
     init_db()  
