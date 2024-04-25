@@ -137,5 +137,5 @@ def change_email():
 
 
 if __name__ == '__main__':
-    init_db()  # Initialize the database tables from setup.sql on start
+    init_db()  
     app.run(debug=True)
