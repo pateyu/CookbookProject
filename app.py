@@ -136,6 +136,38 @@ def change_email():
     return jsonify(response), status_code
 
 
+@app.route('/update_security_key', methods=['POST'])
+def update_security_key():
+    security_key = request.form['security_key']
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'message': 'User not logged in'}), 403
+
+    if security_key == 'admin':
+        conn = get_db_connection()
+        try:
+            # First check if the user is already an admin
+            admin_check = conn.execute('SELECT Account_ID FROM admin WHERE Account_ID = ?', (user_id,)).fetchone()
+            if not admin_check:
+                conn.execute('INSERT INTO admin (Account_ID) VALUES (?)', (user_id,))
+                conn.commit()
+                response = {'message': 'User granted admin privileges'}
+            else:
+                response = {'message': 'User already has admin privileges'}
+            status_code = 200
+        except Exception as e:
+            conn.rollback()
+            response = {'message': 'Failed to grant admin privileges', 'error': str(e)}
+            status_code = 500
+        finally:
+            conn.close()
+    else:
+        response = {'message': 'Invalid security key'}
+        status_code = 400
+
+    return jsonify(response), status_code
+
+
 if __name__ == '__main__':
     init_db()  
     app.run(debug=True)
