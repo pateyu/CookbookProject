@@ -3,22 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Title</title>
+    <title>Recipe Rating</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    <style>
+        .rating {
+            direction: rtl; /* Right-to-left direction */
+            unicode-bidi: bidi-override; /* Override the direction */
+        }
+        .rating span {
+            cursor: pointer;
+            display: inline-block;
+        }
+        .rating span:hover,
+        .rating span:hover ~ span {
+            color: gold;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1 class="text-5xl mb-4">Recipe Title</h1> <!-- "mb-4" adds margin-bottom -->
+        <h1 class="text-4xl mb-4">Recipe Title</h1>
     </header>
     <main>
-        <section class="recipe-image mb-8"> <!-- "mb-8" adds margin-bottom -->
+        <section class="recipe-image mb-8">
             <img src="recipe-image.jpg" alt="Recipe Image">
         </section>
-        <section class="recipe-body mb-8"> <!-- "mb-8" adds margin-bottom -->
+        <section class="recipe-body mb-8">
             <p>This is the body of the recipe. You can describe the recipe here.</p>
         </section>
-        <section class="recipe-ingredients mb-8"> <!-- "mb-8" adds margin-bottom -->
-            <h2>Ingredients</h2>
+        <section class="recipe-ingredients mb-8">
+            <h2 class="text-2xl mb-4">Ingredients</h2>
             <ul>
                 <li>Ingredient 1</li>
                 <li>Ingredient 2</li>
@@ -26,8 +40,8 @@
                 <!-- Add more ingredients as needed -->
             </ul>
         </section>
-        <section class="recipe-instructions"> <!-- No margin-bottom added -->
-            <h2>Instructions</h2>
+        <section class="recipe-instructions mb-8">
+            <h2 class="text-2xl mb-4">Instructions</h2>
             <ol>
                 <li> Instructions for step 1</li>
                 <li> Instructions for step 2</li>
@@ -35,6 +49,43 @@
                 <!-- Add more steps as needed -->
             </ol>
         </section>
+        
+        <section class="recipe-rating">
+            <h2 class="text-2xl mb-4">Rate this recipe:</h2>
+            <div class="rating">
+                <span onclick="rateRecipe(5)" id="star5">★</span>
+                <span onclick="rateRecipe(4)" id="star4">★</span>
+                <span onclick="rateRecipe(3)" id="star3">★</span>
+                <span onclick="rateRecipe(2)" id="star2">★</span>
+                <span onclick="rateRecipe(1)" id="star1">★</span>
+            </div>
+            <p id="selected-rating">Selected rating: </p>
+        </section>
     </main>
+
+    <script>
+        let selectedRating = 0;
+
+        function rateRecipe(rating) {
+            selectedRating = rating;
+            updateSelectedRating();
+            updateStarColors();
+        }
+
+        function updateSelectedRating() {
+            document.getElementById('selected-rating').innerText = 'Selected rating: ' + selectedRating;
+        }
+
+        function updateStarColors() {
+            for (let i = 1; i <= 5; i++) {
+                const star = document.getElementById('star' + i);
+                if (i <= selectedRating) {
+                    star.style.color = 'gold';
+                } else {
+                    star.style.color = '';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
