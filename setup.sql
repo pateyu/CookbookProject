@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS account (
 
 CREATE TABLE IF NOT EXISTS admin (
     Account_ID INT PRIMARY KEY,
-    FOREIGN KEY(Account_ID) REFERENCES account(id)
+    admin_name TEXT UNIQUE NOT NULL,
+    FOREIGN KEY(Account_ID) REFERENCES account(id),
+    FOREIGN KEY(admin_name) REFERENCES account(username)
 );
 
 CREATE TABLE IF NOT EXISTS users (    
