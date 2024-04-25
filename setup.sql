@@ -42,39 +42,57 @@ CREATE TABLE IF NOT EXISTS ingredients (
 );
 
 CREATE TABLE IF NOT EXISTS religious_restrictions (
-
+    religion_name VARCHAR(20) FOREIGN KEY
+    RelRestriction VARCHAR(80) PRIMARY KEY
 );
+
 
 CREATE TABLE IF NOT EXISTS user_restrictions (
-    User_ID INT PRIMARY KEY,
-    UserRestriction VARCHAR(30),
-    FOREIGN KEY(User_ID) REFERENCES account(id)
+    User_ID INTEGER FOREIGN KEY
+    UserRestriction VARCHAR(30) PRIMARY KEY
 );
+
 
 CREATE TABLE IF NOT EXISTS cookbook (
-
+    CookBook_ID INT PRIMARY KEY,
+    FOREIGN KEY(CookBook_ID) REFERENCES user(Account_ID)
 );
+
 
 CREATE TABLE IF NOT EXISTS favorite_recipes (
-
+    CookBook_ID INT FOREIGN KEY
+    Crecipe_name VARCHAR(80) PRIMARY KEY
 );
+
 
 CREATE TABLE IF NOT EXISTS prefers (
-
+    User_ID INTEGER FOREIGN KEY NOT NULL
+    ingredient_name VARCHAR(80) FOREIGN KEY
 );
+
 
 CREATE TABLE IF NOT EXISTS contains (
-
+    CookBook_ID INT FOREIGN KEY
+    recipe_name VARCHAR(80) FOREIGN KEY
 );
+
 
 CREATE TABLE IF NOT EXISTS deletes (
- 
+    Admin_id INT FOREIGN KEY
+    recipe_name VARCHAR(80) FOREIGN KEY
+
+
 );
+
 
 CREATE TABLE IF NOT EXISTS creates (
-
+    User_ID INT FOREIGN KEY
+    recipe_name VARCHAR(80) FOREIGN KEY
 );
+
 
 CREATE TABLE IF NOT EXISTS rates (
-
-);
+    User_ID INTEGER FOREIGN KEY NOT NULL
+    recipe_name VARCHAR(80) FOREIGN KEY NOT NULL
+    user_rating INTEGER CHECK (BETWEEN 0 AND 5)
+)
