@@ -35,6 +35,14 @@ def signup():
         try:
             conn.execute('INSERT INTO account (username, email, password) VALUES (?, ?, ?)', (username, email, password))
             conn.commit()
+
+            # Get the account ID of the newly created account
+            account_id = conn.execute('SELECT id FROM account WHERE username = ?', (username,)).fetchone()[0]
+
+            # Insert the account ID into the users table
+            conn.execute('INSERT INTO users (Account_ID) VALUES (?)', (account_id,))
+            conn.commit()
+
         except sqlite3.IntegrityError:
             return jsonify({'success': False, 'message': 'Username or email already exists'}), 409
         finally:
@@ -165,6 +173,11 @@ def update_security_key():
                     # Insert into admin table including username
                     conn.execute('INSERT INTO admin (Account_ID, admin_name) VALUES (?, ?)', (user_id, username))
                     conn.commit()
+
+                    # Remove the account from the users table
+                    conn.execute('DELETE FROM users WHERE Account_ID = ?', (user_id,))
+                    conn.commit()
+
                     response = {'message': 'User granted admin privileges'}
                 else:
                     response = {'message': 'User not found'}
@@ -205,6 +218,37 @@ def update_diet_restrictions():
     except Exception as e:
         conn.rollback()
         response = {'message': 'Failed to update dietary restrictions', 'error': str(e)}
+        status_code = 500
+    finally:
+        conn.close()
+
+    return jsonify(response), status_code
+
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'message': 'User not logged in'}), 403
+
+    conn = get_db_connection()
+    try:
+        # Delete account from admin table (if it exists)
+        conn.execute('DELETE FROM admin WHERE Account_ID = ?', (user_id,))
+        conn.commit()
+
+        # Delete account from users table
+        conn.execute('DELETE FROM users WHERE Account_ID = ?', (user_id,))
+        conn.commit()
+
+        # Delete account from account table
+        conn.execute('DELETE FROM account WHERE id = ?', (user_id,))
+        conn.commit()
+
+        response = {'message': 'Account deleted successfully'}
+        status_code = 200
+    except Exception as e:
+        conn.rollback()
+        response = {'message': 'Failed to delete account', 'error': str(e)}
         status_code = 500
     finally:
         conn.close()

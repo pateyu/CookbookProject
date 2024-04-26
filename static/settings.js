@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const emailForm = document.getElementById("email-form");
   const securityKeyForm = document.getElementById("securityKeyForm");
   const dietForm = document.getElementById("diet-restrictions-form");
+  const deleteAccountForm = document.getElementById("delete-account-form"); // Added
   const messageDisplay = document.getElementById('messageDisplay');
 
   usernameForm.addEventListener("submit", function (event) {
@@ -30,6 +31,13 @@ document.addEventListener("DOMContentLoaded", function () {
       event.preventDefault();
       submitForm(dietForm, "/update_diet_restrictions");
   });
+    // Added event listener for delete account form
+    deleteAccountForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+            deleteAccount(deleteAccountForm, "/delete_account");
+        }
+    });
 
   function submitForm(form, actionUrl) {
       const formData = new FormData(form);
@@ -53,4 +61,30 @@ document.addEventListener("DOMContentLoaded", function () {
           messageDisplay.style.color = 'red';
       });
   }
+
+  // Function to handle delete account
+  function deleteAccount(form, actionUrl) {
+    fetch(actionUrl, {
+        method: "POST",
+        body: new FormData(form),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            messageDisplay.textContent = data.message;
+            messageDisplay.style.color = 'green';
+            // Redirect to logout after successful account deletion
+            setTimeout(() => { window.location.href = "/logout"; }, 2000);
+        } else {
+            throw new Error("Unexpected response from server");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        messageDisplay.textContent = "An error occurred: " + error.message;
+        messageDisplay.style.color = 'red';
+    });
+}
+
 });
+
