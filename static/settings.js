@@ -3,7 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const passwordForm = document.getElementById("password-form");
   const emailForm = document.getElementById("email-form");
   const securityKeyForm = document.getElementById("securityKeyForm");
-  const messageDisplay = document.getElementById('messageDisplay'); // Get the message display element
+  const dietForm = document.getElementById("diet-restrictions-form");
+  const messageDisplay = document.getElementById('messageDisplay');
 
   usernameForm.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -25,6 +26,11 @@ document.addEventListener("DOMContentLoaded", function () {
       submitForm(securityKeyForm, "/update_security_key");
   });
 
+  dietForm.addEventListener("submit", function(event) {
+      event.preventDefault();
+      submitForm(dietForm, "/update_diet_restrictions");
+  });
+
   function submitForm(form, actionUrl) {
       const formData = new FormData(form);
       
@@ -32,19 +38,19 @@ document.addEventListener("DOMContentLoaded", function () {
           method: "POST",
           body: formData,
       })
-      .then(response => response.json()) // Parse JSON response
+      .then(response => response.json())
       .then(data => {
           if (data.message) {
-              messageDisplay.textContent = data.message; // Display the message in the div
-              messageDisplay.style.color = 'green'; // Set the text color to green for success
+              messageDisplay.textContent = data.message;
+              messageDisplay.style.color = 'green';
           } else {
               throw new Error("Unexpected response from server");
           }
       })
       .catch(error => {
           console.error("Error:", error);
-          messageDisplay.textContent = "An error occurred: " + error.message; // Display the error message
-          messageDisplay.style.color = 'red'; // Set the text color to red for errors
+          messageDisplay.textContent = "An error occurred: " + error.message;
+          messageDisplay.style.color = 'red';
       });
   }
 });
