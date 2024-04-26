@@ -234,16 +234,18 @@ def delete_account():
     try:
         # Delete account from admin table (if it exists)
         conn.execute('DELETE FROM admin WHERE Account_ID = ?', (user_id,))
-        conn.commit()
-
+        
         # Delete account from users table
         conn.execute('DELETE FROM users WHERE Account_ID = ?', (user_id,))
-        conn.commit()
-
+        
+        # Delete corresponding rows from user_restrictions table
+        conn.execute('DELETE FROM user_restrictions WHERE User_ID = ?', (user_id,))
+        
         # Delete account from account table
         conn.execute('DELETE FROM account WHERE id = ?', (user_id,))
+        
         conn.commit()
-
+        
         response = {'message': 'Account deleted successfully'}
         status_code = 200
     except Exception as e:
