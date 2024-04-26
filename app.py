@@ -185,6 +185,33 @@ def update_security_key():
 
     return jsonify(response), status_code
 
+
+@app.route('/update_diet_restrictions', methods=['POST'])
+def update_diet_restrictions():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'message': 'User not logged in'}), 403
+
+    restrictions = request.form.getlist('diet[]')  # This captures all checked boxes
+    conn = get_db_connection()
+    try:
+        # Clear existing restrictions for simplicity, or check and update
+        conn.execute('DELETE FROM user_restrictions WHERE User_ID = ?', (user_id,))
+        for restriction in restrictions:
+            conn.execute('INSERT INTO user_restrictions (User_ID, UserRestriction) VALUES (?, ?)', (user_id, restriction))
+        conn.commit()
+        response = {'message': 'Dietary restrictions updated successfully'}
+        status_code = 200
+    except Exception as e:
+        conn.rollback()
+        response = {'message': 'Failed to update dietary restrictions', 'error': str(e)}
+        status_code = 500
+    finally:
+        conn.close()
+
+    return jsonify(response), status_code
+
+
 if __name__ == '__main__':
     init_db()  
     app.run(debug=True)

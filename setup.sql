@@ -60,12 +60,6 @@ CREATE TABLE IF NOT EXISTS ingredients (
     PRIMARY KEY (recipe_name, ingredient_name)
 );
 
-CREATE TABLE IF NOT EXISTS religious_restrictions (
-    religion_name VARCHAR(20),
-    RelRestriction VARCHAR(80),
-    FOREIGN KEY(religion_name) REFERENCES religious_cuisine(religion_name),
-    PRIMARY KEY (religion_name, RelRestriction)
-);
 
 CREATE TABLE IF NOT EXISTS user_restrictions (
     User_ID INTEGER,
