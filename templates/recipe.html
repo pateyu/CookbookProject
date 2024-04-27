@@ -1,52 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Details</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ recipe.recipe_name }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100">
     <div class="max-w-4xl mx-auto px-5 py-8">
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <img src="https://via.placeholder.com/400x300" alt="Delicious Recipe" class="w-full h-64 object-cover object-center">
-            <div class="p-5">
-                <h2 class="text-3xl font-bold text-gray-800 mb-1">Delicious Chocolate Cake</h2>
-                <span class="text-sm font-semibold inline-block py-1 px-2 uppercase rounded text-purple-600 bg-purple-200 mb-4">Dessert</span>
-                <div class="flex flex-wrap mb-3">
-                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 mb-2">Gluten-Free</span>
-                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-green-600 bg-green-200 mr-2 mb-2">Vegan</span>
-                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-red-600 bg-red-200 mr-2 mb-2">Dairy-Free</span>
-                </div>
-                <p class="text-gray-700 mb-4">
-                    This chocolate cake is a rich, dark, and moist delight that will satisfy anyone's sweet tooth, and it's vegan and gluten-free!
-                </p>
-                <div class="mb-4">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Ingredients</h3>
-                    <ul class="list-disc ml-5 text-gray-700">
-                        <li>1 cup gluten-free flour</li>
-                        <li>1 cup almond milk</li>
-                        <li>1/3 cup cocoa powder</li>
-                        <li>1/2 cup coconut oil</li>
-                        <li>3/4 cup maple syrup</li>
-                    </ul>
-                </div>
-                <div class="mb-4">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Instructions</h3>
-                    <ol class="list-decimal ml-5 text-gray-700">
-                        <li>Preheat your oven to 350°F (175°C).</li>
-                        <li>Mix all dry ingredients in a large bowl.</li>
-                        <li>Add wet ingredients and mix until smooth.</li>
-                        <li>Pour into a baking dish and bake for 25 minutes.</li>
-                        <li>Let cool before serving. Enjoy your delicious, guilt-free dessert!</li>
-                    </ol>
-                </div>
-                <div class="flex justify-between items-center mt-4">
-                    <span class="text-gray-900 font-bold">Prep Time: 15 min</span>
-                    <span class="text-gray-900 font-bold">Cook Time: 25 min</span>
-                </div>
-            </div>
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Dynamically set the image source -->
+        <img
+          src="{{ recipe.recipe_image | default('https://via.placeholder.com/400x300', true) }}"
+          alt="{{ recipe.recipe_name }} Image"
+          class="w-full h-64 object-cover object-center"
+        />
+        <div class="p-5">
+          <!-- Recipe Name -->
+          <h2 class="text-3xl font-bold text-gray-800 mb-1">
+            {{ recipe.recipe_name }}
+          </h2>
+          <!-- Cuisine Type -->
+          <span
+            class="text-sm font-semibold inline-block py-1 px-2 uppercase rounded text-purple-600 bg-purple-200 mb-4"
+            >{{ recipe.Cuisine_ID }}</span
+          >
+          <div class="flex flex-wrap mb-3">
+            <!-- Tags -->
+            {% for tag in tags %}
+            <span
+              class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 mb-2"
+              >{{ tag.RecRestriction }}</span
+            >
+            {% endfor %}
+          </div>
+          <!-- Description -->
+          <p class="text-gray-700 mb-4">{{ recipe.recipe_description }}</p>
+          <div class="mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+              Ingredients
+            </h3>
+            <ul class="list-disc ml-5 text-gray-700">
+              {% for ingredient in ingredients %}
+              <li>{{ ingredient.ingredient_name }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+              Instructions
+            </h3>
+            <ol class="list-decimal ml-5 text-gray-700">
+              <!-- Split instructions by newline to create list -->
+              {% for step in recipe.instructions.split('\n') %}
+              <li>{{ step }}</li>
+              {% endfor %}
+            </ol>
+          </div>
+          <!-- Display times -->
+          <div class="flex justify-between items-center mt-4">
+            <span class="text-gray-900 font-bold"
+              >Prep Time: {{ recipe.prep_time }}</span
+            >
+            <span class="text-gray-900 font-bold"
+              >Cook Time: {{ recipe.cook_time }}</span
+            >
+          </div>
         </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

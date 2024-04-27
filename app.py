@@ -295,9 +295,9 @@ def create_recipe():
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                INSERT INTO recipe (recipe_name, Cuisine_ID, UserID, prep_time, cook_time, recipe_image, instructions)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (recipe_name, cuisine_type, user_id, prep_time, cook_time, file_path, instructions))
+                INSERT INTO recipe (recipe_name, recipe_description, Cuisine_ID, UserID, prep_time, cook_time, recipe_image, instructions)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (recipe_name, description, cuisine_type, user_id, prep_time, cook_time, file_path, instructions))
 
             ingredient_list = ingredients.split(',')
             for ingredient in ingredient_list:
@@ -328,14 +328,23 @@ def dashboard():
     return render_template('dashboard.html')
 
 
+
 @app.route('/recipe/<slug>')
 def view_recipe(slug):
     conn = get_db_connection()
-    recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchone()
-    conn.close()
-    if recipe:
-        return render_template('recipe.html', recipe=recipe)
-    return 'Recipe not found', 404
+    try:
+        recipe_title = slug.replace("-", " ")  # Convert slug back to title
+        recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (recipe_title,)).fetchone()
+        ingredients = conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (recipe_title,)).fetchall()
+        tags = conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (recipe_title,)).fetchall()
+
+        if recipe:
+            # Pass all these details to the template
+            return render_template('recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
+        else:
+            return 'Recipe not found', 404
+    finally:
+        conn.close()
 
 
 
