@@ -34,16 +34,19 @@ CREATE TABLE IF NOT EXISTS religious_cuisine (
 );
 
 CREATE TABLE IF NOT EXISTS recipe (
-    recipe_name VARCHAR(80) PRIMARY KEY,
+    recipe_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_name TEXT UNIQUE,
     Cuisine_ID INTEGER,
     UserID INTEGER,
-    prep_time TIME,
-    cook_time TIME,
-    recipe_image BLOB,
+    recipe_description TEXT,
+    prep_time INTEGER,  
+    cook_time INTEGER,  
+    recipe_image TEXT,  
     instructions TEXT,
     FOREIGN KEY(Cuisine_ID) REFERENCES cuisine(Cuisine_ID),
     FOREIGN KEY(UserID) REFERENCES users(Account_ID)
 );
+
 
 CREATE TABLE IF NOT EXISTS recipe_restrictions (
     recipe_name VARCHAR(80),

@@ -1,11 +1,18 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import sqlite3
 import os
+import urllib.parse
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  
-
+app.config['UPLOAD_FOLDER'] = r'C:\Users\Yug\OneDrive\Pictures\Screenshots'
 DATABASE = 'database.db'
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
+
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -72,6 +79,7 @@ def logout():
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
+
 
 @app.route('/change_username', methods=['POST'])
 def change_username():
@@ -256,6 +264,79 @@ def delete_account():
         conn.close()
 
     return jsonify(response), status_code
+
+
+def slugify(text):
+    """Create a URL slug from the recipe name."""
+    return urllib.parse.quote_plus(text.lower().replace(" ", "-"))
+
+@app.route('/create-recipe', methods=['GET', 'POST'])
+def create_recipe():
+    if request.method == 'POST':
+        recipe_name = request.form['recipe_name']
+        description = request.form['description']
+        prep_time = request.form['prep_time']
+        cook_time = request.form['cook_time']
+        ingredients = request.form['ingredients']
+        instructions = request.form['instructions']
+        cuisine_type = request.form['cuisine_type']
+        user_id = session.get('user_id', 1)  # Default to user ID 1 if not logged in
+        tags = request.form.getlist('tags[]')
+
+        file = request.files['recipe_image']
+        filename = secure_filename(file.filename) if file else None
+        if filename and allowed_file(filename):
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+        else:
+            file_path = None  # Handle cases where no file is provided or file type is not allowed
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO recipe (recipe_name, Cuisine_ID, UserID, prep_time, cook_time, recipe_image, instructions)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (recipe_name, cuisine_type, user_id, prep_time, cook_time, file_path, instructions))
+
+            ingredient_list = ingredients.split(',')
+            for ingredient in ingredient_list:
+                cursor.execute('''
+                    INSERT INTO ingredients (recipe_name, ingredient_name)
+                    VALUES (?, ?)
+                ''', (recipe_name, ingredient.strip()))
+
+            for tag in tags:
+                cursor.execute('''
+                    INSERT INTO recipe_restrictions (recipe_name, RecRestriction)
+                    VALUES (?, ?)
+                ''', (recipe_name, tag))
+
+            conn.commit()
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            return jsonify({'error': 'Failed to insert recipe into database', 'details': str(e)}), 500
+        finally:
+            conn.close()
+
+        return redirect(url_for('view_recipe', slug=recipe_name))  # Adjust according to your URL structure
+    else:
+        return render_template('create_recipe.html')
+    
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+
+@app.route('/recipe/<slug>')
+def view_recipe(slug):
+    conn = get_db_connection()
+    recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchone()
+    conn.close()
+    if recipe:
+        return render_template('recipe.html', recipe=recipe)
+    return 'Recipe not found', 404
+
 
 
 if __name__ == '__main__':
