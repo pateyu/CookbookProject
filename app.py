@@ -76,8 +76,18 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    return render_template('dashboard.html')
+
+
 @app.route('/settings')
 def settings():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
     return render_template('settings.html')
 
 
@@ -272,6 +282,9 @@ def slugify(text):
 
 @app.route('/create-recipe', methods=['GET', 'POST'])
 def create_recipe():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         recipe_name = request.form['recipe_name']
         description = request.form['description']
@@ -323,10 +336,6 @@ def create_recipe():
     else:
         return render_template('create_recipe.html')
     
-@app.route('/dashboard')
-def dashboard():
-    return render_template('dashboard.html')
-
 
 
 @app.route('/recipe/<slug>')
