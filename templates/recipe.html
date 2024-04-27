@@ -3,89 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Rating</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
-    <style>
-        .rating {
-            direction: rtl; /* Right-to-left direction */
-            unicode-bidi: bidi-override; /* Override the direction */
-        }
-        .rating span {
-            cursor: pointer;
-            display: inline-block;
-        }
-        .rating span:hover,
-        .rating span:hover ~ span {
-            color: gold;
-        }
-    </style>
+    <title>Recipe Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <header>
-        <h1 class="text-4xl mb-4">Recipe Title</h1>
-    </header>
-    <main>
-        <section class="recipe-image mb-8">
-            <img src="recipe-image.jpg" alt="Recipe Image">
-        </section>
-        <section class="recipe-body mb-8">
-            <p>This is the body of the recipe. You can describe the recipe here.</p>
-        </section>
-        <section class="recipe-ingredients mb-8">
-            <h2 class="text-2xl mb-4">Ingredients</h2>
-            <ul>
-                <li>Ingredient 1</li>
-                <li>Ingredient 2</li>
-                <li>Ingredient 3</li>
-                <!-- Add more ingredients as needed -->
-            </ul>
-        </section>
-        <section class="recipe-instructions mb-8">
-            <h2 class="text-2xl mb-4">Instructions</h2>
-            <ol>
-                <li> Instructions for step 1</li>
-                <li> Instructions for step 2</li>
-                <li> Instructions for step 3</li>
-                <!-- Add more steps as needed -->
-            </ol>
-        </section>
-        
-        <section class="recipe-rating">
-            <h2 class="text-2xl mb-4">Rate this recipe:</h2>
-            <div class="rating">
-                <span onclick="rateRecipe(5)" id="star5">★</span>
-                <span onclick="rateRecipe(4)" id="star4">★</span>
-                <span onclick="rateRecipe(3)" id="star3">★</span>
-                <span onclick="rateRecipe(2)" id="star2">★</span>
-                <span onclick="rateRecipe(1)" id="star1">★</span>
+<body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto px-5 py-8">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <img src="https://via.placeholder.com/400x300" alt="Delicious Recipe" class="w-full h-64 object-cover object-center">
+            <div class="p-5">
+                <h2 class="text-3xl font-bold text-gray-800 mb-1">Delicious Chocolate Cake</h2>
+                <span class="text-sm font-semibold inline-block py-1 px-2 uppercase rounded text-purple-600 bg-purple-200 mb-4">Dessert</span>
+                <div class="flex flex-wrap mb-3">
+                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 mb-2">Gluten-Free</span>
+                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-green-600 bg-green-200 mr-2 mb-2">Vegan</span>
+                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-red-600 bg-red-200 mr-2 mb-2">Dairy-Free</span>
+                </div>
+                <p class="text-gray-700 mb-4">
+                    This chocolate cake is a rich, dark, and moist delight that will satisfy anyone's sweet tooth, and it's vegan and gluten-free!
+                </p>
+                <div class="mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Ingredients</h3>
+                    <ul class="list-disc ml-5 text-gray-700">
+                        <li>1 cup gluten-free flour</li>
+                        <li>1 cup almond milk</li>
+                        <li>1/3 cup cocoa powder</li>
+                        <li>1/2 cup coconut oil</li>
+                        <li>3/4 cup maple syrup</li>
+                    </ul>
+                </div>
+                <div class="mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Instructions</h3>
+                    <ol class="list-decimal ml-5 text-gray-700">
+                        <li>Preheat your oven to 350°F (175°C).</li>
+                        <li>Mix all dry ingredients in a large bowl.</li>
+                        <li>Add wet ingredients and mix until smooth.</li>
+                        <li>Pour into a baking dish and bake for 25 minutes.</li>
+                        <li>Let cool before serving. Enjoy your delicious, guilt-free dessert!</li>
+                    </ol>
+                </div>
+                <div class="flex justify-between items-center mt-4">
+                    <span class="text-gray-900 font-bold">Prep Time: 15 min</span>
+                    <span class="text-gray-900 font-bold">Cook Time: 25 min</span>
+                </div>
             </div>
-            <p id="selected-rating">Selected rating: </p>
-        </section>
-    </main>
-
-    <script>
-        let selectedRating = 0;
-
-        function rateRecipe(rating) {
-            selectedRating = rating;
-            updateSelectedRating();
-            updateStarColors();
-        }
-
-        function updateSelectedRating() {
-            document.getElementById('selected-rating').innerText = 'Selected rating: ' + selectedRating;
-        }
-
-        function updateStarColors() {
-            for (let i = 1; i <= 5; i++) {
-                const star = document.getElementById('star' + i);
-                if (i <= selectedRating) {
-                    star.style.color = 'gold';
-                } else {
-                    star.style.color = '';
-                }
-            }
-        }
-    </script>
+        </div>
+    </div>
 </body>
 </html>
