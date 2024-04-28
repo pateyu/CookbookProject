@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function displayRecipes(recipes) {
-        recipesContainer.innerHTML = ''; // Clear existing recipes
+        recipesContainer.innerHTML = ''; 
         recipes.forEach(recipe => {
             const recipeElem = document.createElement('div');
             recipeElem.className = 'bg-white rounded-lg shadow p-4';

@@ -368,6 +368,31 @@ def view_recipe(slug):
     finally:
         conn.close()
 
+@app.route('/delete-recipe/<recipe_name>', methods=['DELETE'])
+def delete_recipe(recipe_name):
+    if 'user_id' not in session:
+        return jsonify({'message': 'User not logged in'}), 403
+
+    conn = get_db_connection()
+    recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (recipe_name,)).fetchone()
+
+    # Check if the user is the recipe creator or an admin
+    if session['user_id'] == recipe['UserID'] or session.get('is_admin'):
+        try:
+            conn.execute('DELETE FROM recipe WHERE recipe_name = ?', (recipe_name,))
+            conn.commit()
+            response = {'message': 'Recipe deleted successfully'}
+            status_code = 200
+        except Exception as e:
+            conn.rollback()
+            response = {'message': 'Failed to delete recipe', 'error': str(e)}
+            status_code = 500
+        finally:
+            conn.close()
+        return jsonify(response), status_code
+    else:
+        conn.close()
+        return jsonify({'message': 'Unauthorized'}), 401
 
 
 if __name__ == '__main__':
