@@ -399,6 +399,70 @@ def delete_recipe(recipe_name):
     else:
         conn.close()
         return jsonify({'message': 'Unauthorized'}), 401
+    
+
+@app.route('/edit-recipe/<slug>', methods=['GET', 'POST'])
+def edit_recipe(slug):
+    conn = get_db_connection()
+    recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchone()
+    if not recipe:
+        return 'Recipe not found', 404
+
+    if 'user_id' not in session or (session['user_id'] != recipe['UserID'] and not session.get('is_admin')):
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        recipe_name = request.form['recipe_name']
+        description = request.form['description']
+        prep_time = request.form['prep_time']
+        cook_time = request.form['cook_time']
+        ingredients = request.form['ingredients']
+        instructions = request.form['instructions']
+        cuisine_type = request.form['cuisine_type']
+        tags = request.form.getlist('tags[]')
+
+        file = request.files['recipe_image']
+        filename = secure_filename(file.filename) if file else None
+        file_path = recipe['recipe_image']
+        if filename and allowed_file(filename):
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+
+        try:
+            conn.execute('''
+                UPDATE recipe SET
+                recipe_name = ?,
+                recipe_description = ?,
+                Cuisine_ID = ?,
+                prep_time = ?,
+                cook_time = ?,
+                recipe_image = ?,
+                instructions = ?
+                WHERE recipe_name = ?
+            ''', (recipe_name, description, cuisine_type, prep_time, cook_time, file_path, instructions, slug.replace("-", " ")))
+
+            conn.execute('DELETE FROM ingredients WHERE recipe_name = ?', (slug.replace("-", " "),))
+            ingredient_list = ingredients.split(',')
+            for ingredient in ingredient_list:
+                conn.execute('INSERT INTO ingredients (recipe_name, ingredient_name) VALUES (?, ?)', (slug.replace("-", " "), ingredient.strip()))
+
+            conn.execute('DELETE FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),))
+            for tag in tags:
+                conn.execute('INSERT INTO recipe_restrictions (recipe_name, RecRestriction) VALUES (?, ?)', (slug.replace("-", " "), tag))
+
+            conn.commit()
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            return jsonify({'error': 'Failed to update recipe', 'details': str(e)}), 500
+        finally:
+            conn.close()
+
+        return redirect(url_for('view_recipe', slug=slug))  # Adjust according to your URL structure
+    else:
+        ingredients = conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()
+        tags = conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()
+        conn.close()
+        return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
 
 
 if __name__ == '__main__':

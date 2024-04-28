@@ -1,62 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ recipe.recipe_name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <script src="/static/recipe.js" defer></script>
-  </head>
-  <body class="bg-gray-100">
+</head>
+<body class="bg-gray-100">
     <div class="max-w-4xl mx-auto px-5 py-8">
-      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <img src="/{{recipe.recipe_image}}" alt="{{ recipe.recipe_name }} Image" class="w-full h-64 object-cover object-center">
-        <div class="p-5">
-          <h2 class="text-3xl font-bold text-gray-800 mb-1">
-            {{ recipe.recipe_name }}
-          </h2>
-          <span class="text-sm font-semibold inline-block py-1 px-2 uppercase rounded text-purple-600 bg-purple-200 mb-4">
-            {{ recipe.cuisine_type }} <!-- Ensure 'cuisine_type' is fetched and passed to template -->
-          </span>
-          <div class="flex flex-wrap mb-3">
-            {% for tag in tags %}
-            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 mb-2">
-              {{ tag.RecRestriction }}
-            </span>
-            {% endfor %}
-          </div>
-          <p class="text-gray-700 mb-4">{{ recipe.recipe_description }}</p>
-          <div class="mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Ingredients</h3>
-            <ul class="list-disc ml-5 text-gray-700">
-              {% for ingredient in ingredients %}
-              <li>{{ ingredient.ingredient_name }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          <div class="mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Instructions</h3>
-            <ol class="list-decimal ml-5 text-gray-700">
-              {% for step in recipe.instructions.split('\n') %}
-              <li>{{ step }}</li>
-              {% endfor %}
-            </ol>
-          </div>
-          <div class="flex justify-between items-center mt-4">
-            <span class="text-gray-900 font-bold">Prep Time: {{ recipe.prep_time }}</span>
-            <span class="text-gray-900 font-bold">Cook Time: {{ recipe.cook_time }}</span>
-          </div>
-          {% if session['user_id'] == recipe.UserID or session.get('is_admin', False) %}
-          <button id="deleteRecipeButton" data-recipe-name="{{ recipe.recipe_name | replace(' ', '-') }}" class="mt-4 px-4 py-2 bg-red-600 hover:bg-red-800 text-white rounded">Delete Recipe</button>
-          {% endif %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <img src="/{{recipe.recipe_image}}" alt="{{ recipe.recipe_name }} Image" class="w-full h-64 object-cover object-center">
+            <div class="p-5">
+                <h2 class="text-3xl font-bold text-gray-800 mb-1">{{ recipe.recipe_name }}</h2>
+                <span class="text-sm font-semibold inline-block py-1 px-2 uppercase rounded text-purple-600 bg-purple-200 mb-4">
+                    {{ recipe.cuisine_type }}
+                </span>
+                <div class="flex flex-wrap mb-3">
+                    {% for tag in tags %}
+                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 mb-2">
+                        {{ tag.RecRestriction }}
+                    </span>
+                    {% endfor %}
+                </div>
+                <p class="text-gray-700 mb-4">{{ recipe.recipe_description }}</p>
+                <div class="mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Ingredients</h3>
+                    <ul class="list-disc ml-5 text-gray-700">
+                        {% for ingredient in ingredients %}
+                        <li>{{ ingredient.ingredient_name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Instructions</h3>
+                    <ol class="list-decimal ml-5 text-gray-700">
+                        {% for step in recipe.instructions.split('\n') %}
+                        <li>{{ step }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="flex justify-between items-center mt-4">
+                    <span class="text-gray-900 font-bold">Prep Time: {{ recipe.prep_time }}</span>
+                    <span class="text-gray-900 font-bold">Cook Time: {{ recipe.cook_time }}</span>
+                </div>
+                <!-- Conditionally display edit and delete buttons -->
+                {% if session['user_id'] == recipe.UserID or session.get('is_admin', False) %}
+                <div class="flex space-x-2 mt-4">
+                    <button onclick="location.href='/edit-recipe/{{ recipe.recipe_name | replace(' ', '-') }}';" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">Edit Recipe</button>
+                    <button onclick="deleteRecipe('{{ recipe.recipe_name | replace(' ', '-') }}')" class="px-4 py-2 bg-red-600 hover:bg-red-800 text-white rounded">Delete Recipe</button>
+                </div>
+                {% endif %}
+            </div>
         </div>
-      </div>
     </div>
     <script>
-      document.getElementById('deleteRecipeButton')?.addEventListener('click', function() {
-        const recipeName = this.getAttribute('data-recipe-name');
-        deleteRecipe(recipeName);
-      });
+        document.getElementById('deleteRecipeButton')?.addEventListener('click', function() {
+            const recipeName = this.getAttribute('data-recipe-name');
+            deleteRecipe(recipeName);
+        });
     </script>
-  </body>
+</body>
 </html>
