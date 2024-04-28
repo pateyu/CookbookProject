@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  
-app.config['UPLOAD_FOLDER'] = r'C:\Users\Yug\OneDrive\Pictures\Screenshots'
+app.config['UPLOAD_FOLDER'] = 'static/images'
 DATABASE = 'database.db'
 
 
@@ -76,12 +76,25 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+@app.route('/api/recipes')
+def get_recipes():
+    conn = get_db_connection()
+    recipes = conn.execute('SELECT * FROM recipe').fetchall()
+    conn.close()
+    return jsonify({'recipes': [dict(recipe) for recipe in recipes]})
+
 
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
-        return redirect(url_for('index'))
-    return render_template('dashboard.html')
+        return redirect(url_for('index'))  # Redirect to login page if user is not logged in
+
+    conn = get_db_connection()
+    try:
+        recipes = conn.execute('SELECT * FROM recipe').fetchall()
+        return render_template('dashboard.html', recipes=recipes)
+    finally:
+        conn.close()
 
 
 @app.route('/settings')
@@ -302,7 +315,7 @@ def create_recipe():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
         else:
-            file_path = None  # Handle cases where no file is provided or file type is not allowed
+            file_path = None  
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -342,13 +355,13 @@ def create_recipe():
 def view_recipe(slug):
     conn = get_db_connection()
     try:
-        recipe_title = slug.replace("-", " ")  # Convert slug back to title
+        recipe_title = slug.replace("-", " ")  
         recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (recipe_title,)).fetchone()
         ingredients = conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (recipe_title,)).fetchall()
         tags = conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (recipe_title,)).fetchall()
 
         if recipe:
-            # Pass all these details to the template
+            
             return render_template('recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
         else:
             return 'Recipe not found', 404

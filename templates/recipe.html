@@ -13,11 +13,7 @@
     <div class="max-w-4xl mx-auto px-5 py-8">
       <div class="bg-white rounded-lg shadow-lg overflow-hidden">
         <!-- Dynamically set the image source -->
-        <img
-          src="{{ recipe.recipe_image | default('https://via.placeholder.com/400x300', true) }}"
-          alt="{{ recipe.recipe_name }} Image"
-          class="w-full h-64 object-cover object-center"
-        />
+        <img src="/{{ recipe.recipe_image }}" alt="{{ recipe.recipe_name }} Image" class="w-full h-64 object-cover object-center">
         <div class="p-5">
           <!-- Recipe Name -->
           <h2 class="text-3xl font-bold text-gray-800 mb-1">
