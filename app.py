@@ -59,17 +59,23 @@ def signup():
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()  # Use get_json() to parse incoming JSON data
+    data = request.get_json()
     username = data['username']
     password = data['password']
     conn = get_db_connection()
-    user = conn.execute('SELECT * FROM account WHERE username = ? AND password = ?', (username, password)).fetchone()
-    conn.close()
-    if user:
-        session['user_id'] = user['id']
-        return jsonify({'message': 'Login successful', 'redirect': url_for('settings')}), 200
-    else:
-        return jsonify({'message': 'Login failed'}), 401
+    try:
+        user = conn.execute('SELECT * FROM account WHERE username = ? AND password = ?', (username, password)).fetchone()
+        if user:
+            session['user_id'] = user['id']
+            # Check if the user is an admin
+            admin_check = conn.execute('SELECT * FROM admin WHERE Account_ID = ?', (user['id'],)).fetchone()
+            session['is_admin'] = bool(admin_check)
+            return jsonify({'message': 'Login successful', 'redirect': url_for('dashboard')}), 200
+        else:
+            return jsonify({'message': 'Login failed'}), 401
+    finally:
+        conn.close()
+
 
 @app.route('/logout')
 def logout():
