@@ -406,9 +406,11 @@ def edit_recipe(slug):
     conn = get_db_connection()
     recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchone()
     if not recipe:
+        conn.close()
         return 'Recipe not found', 404
 
     if 'user_id' not in session or (session['user_id'] != recipe['UserID'] and not session.get('is_admin')):
+        conn.close()
         return redirect(url_for('index'))
 
     if request.method == 'POST':
@@ -457,10 +459,10 @@ def edit_recipe(slug):
         finally:
             conn.close()
 
-        return redirect(url_for('view_recipe', slug=slug))  # Adjust according to your URL structure
+        return redirect(url_for('view_recipe', slug=slug))
     else:
-        ingredients = conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()
-        tags = conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()
+        ingredients = [ingredient['ingredient_name'] for ingredient in conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()]
+        tags = [tag['RecRestriction'] for tag in conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()]
         conn.close()
         return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
 

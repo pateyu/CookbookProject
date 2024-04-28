@@ -105,7 +105,7 @@
                     class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div class="mt-4">
-                    Current Image: <img src="{{ url_for('static', filename='images/' ~ recipe.recipe_image) }}" alt="Current Image" class="w-32 h-32 rounded">
+                    Current Image: <img src="/{{recipe.recipe_image}}" alt="Current Image" class="w-32 h-32 rounded">
                 </div>
             </div>
             <button
