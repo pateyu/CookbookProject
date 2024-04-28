@@ -466,6 +466,28 @@ def edit_recipe(slug):
         conn.close()
         return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
 
+@app.route('/save-to-cookbook/<recipe_name>', methods=['POST'])
+def save_to_cookbook(recipe_name):
+    if 'user_id' not in session:
+        return jsonify({'message': 'You must be logged in to save recipes.'}), 401
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    try:
+        # Check if recipe already saved
+        existing = conn.execute('SELECT * FROM cookbook WHERE user_id = ? AND recipe_name = ?', (user_id, recipe_name)).fetchone()
+        if existing:
+            return jsonify({'message': 'Recipe already in your cookbook.'}), 409
+
+        # Save recipe to cookbook
+        conn.execute('INSERT INTO cookbook (user_id, recipe_name) VALUES (?, ?)', (user_id, recipe_name))
+        conn.commit()
+        return jsonify({'message': 'Recipe saved to cookbook successfully!'}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'message': 'Error saving recipe to cookbook.', 'error': str(e)}), 500
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     init_db()  

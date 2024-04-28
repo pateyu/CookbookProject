@@ -45,12 +45,19 @@
                     <span class="text-gray-900 font-bold">Cook Time: {{ recipe.cook_time }}</span>
                 </div>
                 <!-- Conditionally display edit and delete buttons -->
-                {% if session['user_id'] == recipe.UserID or session.get('is_admin', False) %}
                 <div class="flex space-x-2 mt-4">
+                    <!-- Save to Cookbook button for all logged-in users -->
+                    {% if session['user_id'] %}
+                    <button onclick="saveToCookbook('{{ recipe.recipe_name | replace(' ', '-') }}')" class="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded">Save to Cookbook</button>
+                    {% endif %}
+                
+                    <!-- Edit and Delete buttons for users who created the recipe or are admins -->
+                    {% if session['user_id'] == recipe.UserID or session.get('is_admin', False) %}
                     <button onclick="location.href='/edit-recipe/{{ recipe.recipe_name | replace(' ', '-') }}';" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">Edit Recipe</button>
                     <button onclick="deleteRecipe('{{ recipe.recipe_name | replace(' ', '-') }}')" class="px-4 py-2 bg-red-600 hover:bg-red-800 text-white rounded">Delete Recipe</button>
+                    {% endif %}
                 </div>
-                {% endif %}
+                
             </div>
         </div>
     </div>

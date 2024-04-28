@@ -19,4 +19,16 @@ function deleteRecipe(recipeName) {
       alert("An error occurred while deleting the recipe.");
     });
   }
-  
+
+function saveToCookbook(recipeName) {
+  fetch(`/save-to-cookbook/${encodeURIComponent(recipeName)}`, {
+      method: 'POST'
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.message) {
+          alert(data.message);
+      }
+  })
+  .catch(error => console.error('Error saving to cookbook:', error));
+}
