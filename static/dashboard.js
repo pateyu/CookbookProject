@@ -1,8 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
     const recipesContainer = document.querySelector('.recipes-container');
+    const searchForm = document.querySelector('form');
 
-    function fetchRecipes() {
-        fetch('/api/recipes')
+    function fetchRecipes(query = '') {
+        let url = '/api/recipes';
+        if (query) {
+            url += '?search=' + encodeURIComponent(query);
+        }
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 displayRecipes(data.recipes);
@@ -32,5 +38,12 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    fetchRecipes(); // Initial fetch of recipes
+    // Listen for search form submission to re-fetch recipes based on search query
+    searchForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const searchValue = this.querySelector('input[name="search"]').value;
+        fetchRecipes(searchValue);
+    });
+
+    fetchRecipes(); // Initial fetch of recipes when the page loads
 });
