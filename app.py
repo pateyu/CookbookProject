@@ -474,20 +474,49 @@ def save_to_cookbook(recipe_name):
     user_id = session['user_id']
     conn = get_db_connection()
     try:
-        # Check if recipe already saved
-        existing = conn.execute('SELECT * FROM cookbook WHERE user_id = ? AND recipe_name = ?', (user_id, recipe_name)).fetchone()
-        if existing:
-            return jsonify({'message': 'Recipe already in your cookbook.'}), 409
+        # Check if the user already has a cookbook entry
+        cookbook_id = conn.execute('SELECT CookBook_ID FROM cookbook WHERE CookBook_ID = ?', (user_id,)).fetchone()
+        if not cookbook_id:
+            # Create a cookbook entry if it does not exist
+            conn.execute('INSERT INTO cookbook (CookBook_ID) VALUES (?)', (user_id,))
 
-        # Save recipe to cookbook
-        conn.execute('INSERT INTO cookbook (user_id, recipe_name) VALUES (?, ?)', (user_id, recipe_name))
+        # Check if the recipe is already saved
+        exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
+        if exists:
+            return jsonify({'message': 'Recipe already in cookbook.'}), 409
+
+        # Save the recipe into the favorite_recipes table
+        conn.execute('INSERT INTO favorite_recipes (CookBook_ID, Crecipe_name) VALUES (?, ?)', (user_id, recipe_name))
         conn.commit()
-        return jsonify({'message': 'Recipe saved to cookbook successfully!'}), 200
-    except Exception as e:
+        return jsonify({'message': 'Recipe saved to your cookbook!'}), 200
+    except sqlite3.IntegrityError as e:
         conn.rollback()
-        return jsonify({'message': 'Error saving recipe to cookbook.', 'error': str(e)}), 500
+        return jsonify({'message': 'Failed to save recipe.', 'error': str(e)}), 500
     finally:
         conn.close()
+
+@app.route('/cookbook')
+def cookbook():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    try:
+        recipes = conn.execute('''
+            SELECT r.* FROM recipe r
+            WHERE r.UserID = ? 
+            UNION
+            SELECT r.* FROM recipe r
+            JOIN favorite_recipes fr ON fr.Crecipe_name = r.recipe_name
+            JOIN cookbook c ON fr.CookBook_ID = c.CookBook_ID
+            WHERE c.CookBook_ID = ?
+        ''', (user_id, user_id)).fetchall()
+    finally:
+        conn.close()
+
+    return render_template('cookbook.html', recipes=recipes)
+
 
 if __name__ == '__main__':
     init_db()  

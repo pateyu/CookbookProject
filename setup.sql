@@ -77,10 +77,11 @@ CREATE TABLE IF NOT EXISTS cookbook (
 );
 
 CREATE TABLE IF NOT EXISTS favorite_recipes (
-    CookBook_ID INTEGER, 
+    CookBook_ID INTEGER,
     Crecipe_name VARCHAR(80),
     FOREIGN KEY(CookBook_ID) REFERENCES cookbook(CookBook_ID),
-    PRIMARY KEY (CookBook_ID, Crecipe_name)    
+    FOREIGN KEY(Crecipe_name) REFERENCES recipe(recipe_name),
+    PRIMARY KEY (CookBook_ID, Crecipe_name)
 );
 
 CREATE TABLE IF NOT EXISTS prefers (
