@@ -518,6 +518,50 @@ def cookbook():
     return render_template('cookbook.html', recipes=recipes)
 
 
+
+
+@app.route('/toggle-cookbook/<recipe_name>', methods=['POST'])
+def toggle_cookbook(recipe_name):
+    if 'user_id' not in session:
+        return jsonify({'message': 'You must be logged in to manage recipes.'}), 401
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    try:
+        # Ensure the user has a cookbook entry
+        conn.execute('INSERT OR IGNORE INTO cookbook (CookBook_ID) VALUES (?)', (user_id,))
+
+        # Check if the recipe is already saved
+        exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
+        if exists:
+            # Delete the recipe from the cookbook
+            conn.execute('DELETE FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name))
+            message = 'Recipe removed from your cookbook.'
+        else:
+            # Save the recipe into the cookbook
+            conn.execute('INSERT INTO favorite_recipes (CookBook_ID, Crecipe_name) VALUES (?, ?)', (user_id, recipe_name))
+            message = 'Recipe saved to your cookbook!'
+
+        conn.commit()
+        return jsonify({'message': message}), 200
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+        return jsonify({'message': 'Failed to update cookbook.', 'error': str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/check-cookbook/<recipe_name>')
+def check_cookbook(recipe_name):
+    if 'user_id' not in session:
+        return jsonify({'in_cookbook': False}), 200
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
+    conn.close()
+    return jsonify({'in_cookbook': bool(exists)}), 200
+
+
 if __name__ == '__main__':
     init_db()  
     app.run(debug=True)
