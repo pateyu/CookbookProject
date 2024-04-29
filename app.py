@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)  
 app.config['UPLOAD_FOLDER'] = 'static/images'
 DATABASE = 'database.db'
+ALL_TAGS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free']
 
 
 def allowed_file(filename):
@@ -298,34 +299,33 @@ def delete_account():
 def slugify(text):
     """Create a URL slug from the recipe name."""
     return urllib.parse.quote_plus(text.lower().replace(" ", "-"))
-
 @app.route('/create-recipe', methods=['GET', 'POST'])
 def create_recipe():
     if 'user_id' not in session:
         return redirect(url_for('index'))
 
-    if request.method == 'POST':
-        recipe_name = request.form['recipe_name']
-        description = request.form['description']
-        prep_time = request.form['prep_time']
-        cook_time = request.form['cook_time']
-        ingredients = request.form['ingredients']
-        instructions = request.form['instructions']
-        cuisine_type = request.form['cuisine_type']
-        user_id = session.get('user_id', 1)  # Default to user ID 1 if not logged in
-        tags = request.form.getlist('tags[]')
+    conn = get_db_connection()
+    try:
+        if request.method == 'POST':
+            recipe_name = request.form['recipe_name']
+            description = request.form['description']
+            prep_time = request.form['prep_time']
+            cook_time = request.form['cook_time']
+            ingredients = request.form['ingredients']
+            instructions = request.form['instructions']
+            cuisine_type = request.form['cuisine_type']
+            user_id = session.get('user_id', 1)  # Default to user ID 1 if not logged in
+            tags = request.form.getlist('tags[]')
 
-        file = request.files['recipe_image']
-        filename = secure_filename(file.filename) if file else None
-        if filename and allowed_file(filename):
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-        else:
-            file_path = None  
+            file = request.files['recipe_image']
+            filename = secure_filename(file.filename) if file else None
+            if filename and allowed_file(filename):
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+            else:
+                file_path = None  
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        try:
+            cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO recipe (recipe_name, recipe_description, Cuisine_ID, UserID, prep_time, cook_time, recipe_image, instructions)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -345,17 +345,16 @@ def create_recipe():
                 ''', (recipe_name, tag))
 
             conn.commit()
-        except sqlite3.IntegrityError as e:
-            conn.rollback()
-            return jsonify({'error': 'Failed to insert recipe into database', 'details': str(e)}), 500
-        finally:
-            conn.close()
-
-        return redirect(url_for('view_recipe', slug=recipe_name))  # Adjust according to your URL structure
-    else:
-        return render_template('create_recipe.html')
-    
-
+            return redirect(url_for('view_recipe', slug=recipe_name))  # Redirect to the view recipe page
+        else:
+            # Fetch all available cuisines to populate the dropdown
+            cuisines = conn.execute('SELECT * FROM cuisine').fetchall()
+            return render_template('create_recipe.html', cuisines=cuisines)
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+        return jsonify({'error': 'Failed to insert recipe into database', 'details': str(e)}), 500
+    finally:
+        conn.close()
 
 @app.route('/recipe/<slug>')
 def view_recipe(slug):
@@ -403,7 +402,6 @@ def delete_recipe(recipe_name):
     else:
         conn.close()
         return jsonify({'message': 'Unauthorized'}), 401
-    
 
 @app.route('/edit-recipe/<slug>', methods=['GET', 'POST'])
 def edit_recipe(slug):
@@ -413,12 +411,15 @@ def edit_recipe(slug):
         conn.close()
         return 'Recipe not found', 404
 
+    recipe_tags = conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()
+    recipe_tags = [tag['RecRestriction'] for tag in recipe_tags]
+    
+
     if 'user_id' not in session or (session['user_id'] != recipe['UserID'] and not session.get('is_admin')):
         conn.close()
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        recipe_name = request.form['recipe_name']
         description = request.form['description']
         prep_time = request.form['prep_time']
         cook_time = request.form['cook_time']
@@ -437,7 +438,6 @@ def edit_recipe(slug):
         try:
             conn.execute('''
                 UPDATE recipe SET
-                recipe_name = ?,
                 recipe_description = ?,
                 Cuisine_ID = ?,
                 prep_time = ?,
@@ -445,12 +445,7 @@ def edit_recipe(slug):
                 recipe_image = ?,
                 instructions = ?
                 WHERE recipe_name = ?
-            ''', (recipe_name, description, cuisine_type, prep_time, cook_time, file_path, instructions, slug.replace("-", " ")))
-
-            conn.execute('DELETE FROM ingredients WHERE recipe_name = ?', (slug.replace("-", " "),))
-            ingredient_list = ingredients.split(',')
-            for ingredient in ingredient_list:
-                conn.execute('INSERT INTO ingredients (recipe_name, ingredient_name) VALUES (?, ?)', (slug.replace("-", " "), ingredient.strip()))
+            ''', (description, cuisine_type, prep_time, cook_time, file_path, instructions, slug.replace("-", " ")))
 
             conn.execute('DELETE FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),))
             for tag in tags:
@@ -466,9 +461,9 @@ def edit_recipe(slug):
         return redirect(url_for('view_recipe', slug=slug))
     else:
         ingredients = [ingredient['ingredient_name'] for ingredient in conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()]
-        tags = [tag['RecRestriction'] for tag in conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (slug.replace("-", " "),)).fetchall()]
         conn.close()
-        return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
+        return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients, all_tags=ALL_TAGS, recipe_tags=recipe_tags)
+
 
 @app.route('/save-to-cookbook/<recipe_name>', methods=['POST'])
 def save_to_cookbook(recipe_name):

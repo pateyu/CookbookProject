@@ -84,17 +84,17 @@
           ></textarea>
         </div>
         <div>
-          <label class="block text-gray-700 text-sm font-bold mb-2"
-            >Cuisine Type:</label
-          >
-          <input
-            type="text"
+          <label class="block text-gray-700 text-sm font-bold mb-2">Cuisine Type:</label>
+          <select
             name="cuisine_type"
-            placeholder="Enter cuisine type"
             class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          >
+            <option value="">Select Cuisine Type</option>
+            {% for cuisine in cuisines %}
+            <option value="{{ cuisine.Cuisine_ID }}">{{ cuisine.Cuisine_ID }}</option>
+            {% endfor %}
+          </select>
         </div>
-
         <div>
           <label class="block text-gray-700 text-sm font-bold mb-2"
             >Dietary Tags:</label

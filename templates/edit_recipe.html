@@ -25,6 +25,7 @@
                     placeholder="Enter recipe name"
                     value="{{ recipe.recipe_name }}"
                     class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    readonly
                 />
             </div>
             <div>
@@ -77,23 +78,23 @@
                     type="text"
                     name="cuisine_type"
                     placeholder="Enter cuisine type"
-                    value="{{ recipe.cuisine_type }}"
+                    value="{{ recipe.cuisine_ID }}"
                     class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Dietary Tags:</label>
-                {% for tag in tags %}
+                {% for tag in all_tags %}
                 <div class="flex items-center mb-2">
                     <input
                         type="checkbox"
                         name="tags[]"
-                        value="{{ tag.RecRestriction }}"
-                        id="{{ tag.RecRestriction }}"
+                        value="{{ tag }}"
+                        id="{{ tag }}"
                         class="mr-2"
-                        {% if tag.RecRestriction in recipe.tags %} checked {% endif %}
+                        {% if tag in recipe_tags %} checked {% endif %}
                     />
-                    <label for="{{ tag.RecRestriction }}">{{ tag.RecRestriction }}</label>
+                    <label for="{{ tag }}">{{ tag }}</label>
                 </div>
                 {% endfor %}
             </div>

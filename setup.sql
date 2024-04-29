@@ -127,29 +127,25 @@ CREATE TABLE IF NOT EXISTS rates (
     PRIMARY KEY (User_ID, recipe_name)  
 );
 
--- Optionally clear existing entries before inserting new ones
-DELETE FROM regional_cuisine;
-DELETE FROM cuisine_type;
-DELETE FROM cuisine;
 
--- Insert into 'cuisine'
-INSERT INTO cuisine (Cuisine_ID) VALUES
-('North_America'),
-('Mexico'),
-('India'),
+-- Insert into 'cuisine' only if the cuisine does not already exist
+INSERT OR IGNORE INTO cuisine (Cuisine_ID) VALUES
+('American'),
+('Mexican'),
+('Indian'),
 ('Breakfast'),
 ('Lunch'),
 ('Dinner'),
 ('Dessert');
 
--- Insert into 'regional_cuisine'
-INSERT INTO regional_cuisine (region_desc, Cuisine_ID) VALUES
-('North American cuisine includes foods like burgers and barbecue', 'North_America'),
-('Mexican cuisine features staples like tacos and enchiladas', 'Mexico'),
-('Indian cuisine is characterized by its use of various spices and herbs', 'India');
+-- Insert into 'regional_cuisine' only if the cuisine does not already exist
+INSERT OR IGNORE INTO regional_cuisine (region_desc, Cuisine_ID) VALUES
+('North American cuisine includes foods like burgers and barbecue', 'American'),
+('Mexican cuisine features staples like tacos and enchiladas', 'Mexican'),
+('Indian cuisine is characterized by its use of various spices and herbs', 'Indian');
 
--- Insert into 'cuisine_type'
-INSERT INTO cuisine_type (type_description, Cuisine_ID) VALUES
+-- Insert into 'cuisine_type' only if the cuisine does not already exist
+INSERT OR IGNORE INTO cuisine_type (type_description, Cuisine_ID) VALUES
 ('Foods eaten first thing in the morning', 'Breakfast'),
 ('Good midday meals', 'Lunch'),
 ('Dinners eaten in the evening', 'Dinner'),
