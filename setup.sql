@@ -1,3 +1,5 @@
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS account (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
@@ -18,25 +20,25 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS cuisine (
-    Cuisine_ID INTEGER PRIMARY KEY
+    Cuisine_ID TEXT PRIMARY KEY
 );
 
 CREATE TABLE IF NOT EXISTS regional_cuisine (
-    region_name VARCHAR(20) PRIMARY KEY,
-    Cuisine_ID INTEGER,
+    region_desc TEXT,
+    Cuisine_ID TEXT PRIMARY KEY,
     FOREIGN KEY(Cuisine_ID) REFERENCES cuisine(Cuisine_ID)
 );
 
-CREATE TABLE IF NOT EXISTS religious_cuisine (
-    religion_name VARCHAR(80) PRIMARY KEY,
-    Cuisine_ID INTEGER,
+CREATE TABLE IF NOT EXISTS cuisine_type (
+    type_description TEXT,
+    Cuisine_ID TEXT PRIMARY KEY,
     FOREIGN KEY(Cuisine_ID) REFERENCES cuisine(Cuisine_ID)
 );
 
 CREATE TABLE IF NOT EXISTS recipe (
     recipe_id INTEGER PRIMARY KEY AUTOINCREMENT,
     recipe_name TEXT UNIQUE,
-    Cuisine_ID INTEGER,
+    Cuisine_ID TEXT,
     UserID INTEGER,
     recipe_description TEXT,
     prep_time INTEGER,  
@@ -124,3 +126,26 @@ CREATE TABLE IF NOT EXISTS rates (
     FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name),
     PRIMARY KEY (User_ID, recipe_name)  
 );
+
+-- Insert into 'cuisine'
+INSERT INTO cuisine (Cuisine_ID) VALUES
+('North_America'),
+('Mexico'),
+('India'),
+('Breakfast'),
+('Lunch'),
+('Dinner'),
+('Dessert');
+
+-- Insert into 'regional_cuisine'
+INSERT INTO regional_cuisine (region_desc, Cuisine_ID) VALUES
+('North American cuisine includes foods like burgers and barbecue', 'North_America'),
+('Mexican cuisine features staples like tacos and enchiladas', 'Mexico'),
+('Indian cuisine is characterized by its use of various spices and herbs', 'India');
+
+-- Insert into 'cuisine_type'
+INSERT INTO cuisine_type (type_description, Cuisine_ID) VALUES
+('Foods eaten first thing in the morning', 'Breakfast'),
+('Good midday meals', 'Lunch'),
+('Dinners eaten in the evening', 'Dinner'),
+('Sweet treats.', 'Dessert');
