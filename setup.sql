@@ -127,6 +127,11 @@ CREATE TABLE IF NOT EXISTS rates (
     PRIMARY KEY (User_ID, recipe_name)  
 );
 
+-- Optionally clear existing entries before inserting new ones
+DELETE FROM regional_cuisine;
+DELETE FROM cuisine_type;
+DELETE FROM cuisine;
+
 -- Insert into 'cuisine'
 INSERT INTO cuisine (Cuisine_ID) VALUES
 ('North_America'),
