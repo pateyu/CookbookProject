@@ -387,6 +387,10 @@ def delete_recipe(recipe_name):
         try:
             conn.execute('DELETE FROM recipe WHERE recipe_name = ?', (recipe_name,))
             conn.commit()
+            conn.execute('DELETE FROM recipe_restrictions WHERE recipe_name = ?', (recipe_name,))
+            conn.commit()
+            conn.execute('DELETE FROM ingredients WHERE recipe_name = ?', (recipe_name,))
+            conn.commit()
             response = {'message': 'Recipe deleted successfully'}
             status_code = 200
         except Exception as e:
