@@ -369,23 +369,27 @@ def create_recipe():
         return jsonify({'error': 'Failed to insert recipe into database', 'details': str(e)}), 500
     finally:
         conn.close()
-
 @app.route('/recipe/<slug>')
 def view_recipe(slug):
     conn = get_db_connection()
     try:
-        recipe_title = slug.replace("-", " ")  
+        recipe_title = slug.replace("-", " ")
         recipe = conn.execute('SELECT * FROM recipe WHERE recipe_name = ?', (recipe_title,)).fetchone()
         ingredients = conn.execute('SELECT ingredient_name FROM ingredients WHERE recipe_name = ?', (recipe_title,)).fetchall()
         tags = conn.execute('SELECT RecRestriction FROM recipe_restrictions WHERE recipe_name = ?', (recipe_title,)).fetchall()
 
+        # Fetch average rating and count of ratings, ensuring avg_rating is treated as a float
+        rating_result = conn.execute('SELECT AVG(user_rating) AS avg_rating, COUNT(*) AS rating_count FROM rates WHERE recipe_name = ?', (recipe_title,)).fetchone()
+        avg_rating = float(rating_result['avg_rating']) if rating_result['avg_rating'] is not None else 0
+        rating_count = rating_result['rating_count']
+
         if recipe:
-            
-            return render_template('recipe.html', recipe=recipe, ingredients=ingredients, tags=tags)
+            return render_template('recipe.html', recipe=recipe, ingredients=ingredients, tags=tags, avg_rating=avg_rating, rating_count=rating_count)
         else:
             return 'Recipe not found', 404
     finally:
         conn.close()
+
 
 @app.route('/delete-recipe/<recipe_name>', methods=['DELETE'])
 def delete_recipe(recipe_name):
@@ -571,6 +575,27 @@ def check_cookbook(recipe_name):
     exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
     conn.close()
     return jsonify({'in_cookbook': bool(exists)}), 200
+
+@app.route('/rate-recipe', methods=['POST'])
+def rate_recipe():
+    if 'user_id' not in session:
+        return jsonify({'error': 'You must be logged in to rate recipes.'}), 401
+    
+    data = request.get_json()
+    recipe_name = data['recipe_name']
+    rating = data['rating']
+    
+    try:
+        conn = get_db_connection()
+        conn.execute('INSERT OR REPLACE INTO rates (User_ID, recipe_name, user_rating) VALUES (?, ?, ?)', 
+                     (session['user_id'], recipe_name, rating))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': 'Failed to rate recipe', 'details': str(e)}), 500
+    finally:
+        conn.close()
+    return jsonify({'message': 'Rating updated successfully'}), 200
 
 
 if __name__ == '__main__':

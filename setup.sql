@@ -150,3 +150,4 @@ INSERT OR IGNORE INTO cuisine_type (type_description, Cuisine_ID) VALUES
 ('Good midday meals', 'Lunch'),
 ('Dinners eaten in the evening', 'Dinner'),
 ('Sweet treats.', 'Dessert');
+

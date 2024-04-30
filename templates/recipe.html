@@ -12,7 +12,17 @@
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <img src="/{{recipe.recipe_image}}" alt="{{ recipe.recipe_name }} Image" class="w-full h-64 object-cover object-center">
             <div class="p-5">
-                <h2 class="text-3xl font-bold text-gray-800 mb-1">{{ recipe.recipe_name }}</h2>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-gray-800">{{ recipe.recipe_name }}</h2>
+                    <span class="text-lg font-bold text-gray-800">
+                        Rating:
+                        {% if avg_rating %}
+                        {{ avg_rating|round(1, 'floor') }}/5 
+                        {% else %}
+                        No ratings
+                        {% endif %}
+                    </span>
+                </div>
                 <span class="text-sm font-semibold inline-block py-1 px-2 uppercase rounded text-purple-600 bg-purple-200 mb-4">
                     {{ recipe.Cuisine_ID}}
                 </span>
@@ -44,6 +54,17 @@
                     <span class="text-gray-900 font-bold">Prep Time: {{ recipe.prep_time }}</span>
                     <span class="text-gray-900 font-bold">Cook Time: {{ recipe.cook_time }}</span>
                 </div>
+                <!-- User rating form -->
+                <div class="mt-4">
+                    
+                    <form id="ratingForm" action="/rate-recipe" method="post" class="flex items-center">
+                        <input type="hidden" name="recipe_name" value="{{ recipe.recipe_name }}">
+                        <label for="rating">Rate Recipe:</label>
+                        <input type="number" id="rating" name="rating" min="1" max="5" required class="mx-4">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"> Submit</button>
+                    </form>
+                    
+                </div>
                 <!-- Conditionally display edit and delete buttons -->
                 <div class="flex space-x-2 mt-4">
                     <button id="cookbookButton" onclick="toggleCookbook('{{ recipe.recipe_name | replace(' ', '-') }}')" class="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded">Save to Cookbook</button>
@@ -51,6 +72,9 @@
                     <button onclick="location.href='/edit-recipe/{{ recipe.recipe_name | replace(' ', '-') }}';" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">Edit Recipe</button>
                     <button onclick="deleteRecipe('{{ recipe.recipe_name | replace(' ', '-') }}')" class="px-4 py-2 bg-red-600 hover:bg-red-800 text-white rounded">Delete Recipe</button>
                     {% endif %}
+                </div>
+                <div class="text-right mt-2">
+                    <span class="text-md font-medium text-blue-700">Ratings from {{ rating_count }} reviews</span>
                 </div>
             </div>
         </div>
