@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS recipe_restrictions (
 CREATE TABLE IF NOT EXISTS ingredients (
     recipe_name VARCHAR(80),
     ingredient_name VARCHAR(80),
-    ingredient_type VARCHAR(30),
+--    ingredient_type VARCHAR(30),
     FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
     PRIMARY KEY (recipe_name, ingredient_name)
 );
@@ -76,45 +76,45 @@ CREATE TABLE IF NOT EXISTS cookbook (
     FOREIGN KEY(CookBook_ID) REFERENCES users(Account_ID) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS favorite_recipes (
-    CookBook_ID INTEGER,
-    Crecipe_name VARCHAR(80),
-    FOREIGN KEY(CookBook_ID) REFERENCES cookbook(CookBook_ID) ON DELETE CASCADE,
-    FOREIGN KEY(Crecipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
-    PRIMARY KEY (CookBook_ID, Crecipe_name)
-);
+--CREATE TABLE IF NOT EXISTS favorite_recipes (
+--    CookBook_ID INTEGER,
+--    Crecipe_name VARCHAR(80),
+--    FOREIGN KEY(CookBook_ID) REFERENCES cookbook(CookBook_ID) ON DELETE CASCADE,
+--    FOREIGN KEY(Crecipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
+--    PRIMARY KEY (CookBook_ID, Crecipe_name)
+--);
 
-CREATE TABLE IF NOT EXISTS prefers (
-    User_ID INTEGER NOT NULL,
-    ingredient_name VARCHAR(80),
-    FOREIGN KEY(User_ID) REFERENCES users(Account_ID) ON DELETE CASCADE,
-    FOREIGN KEY(ingredient_name) REFERENCES ingredients(ingredient_name) ON DELETE CASCADE,
-    PRIMARY KEY (User_ID, ingredient_name)
-);
+--CREATE TABLE IF NOT EXISTS prefers (  WE MIGHT KEEP!
+--    User_ID INTEGER NOT NULL,
+--    ingredient_name VARCHAR(80),
+--    FOREIGN KEY(User_ID) REFERENCES users(Account_ID) ON DELETE CASCADE,
+--    FOREIGN KEY(ingredient_name) REFERENCES ingredients(ingredient_name) ON DELETE CASCADE,
+--    PRIMARY KEY (User_ID, ingredient_name)
+--);
 
 CREATE TABLE IF NOT EXISTS contains (
     CookBook_ID INTEGER,
-    recipe_name VARCHAR(80),
+    recipe_name TEXT,
     FOREIGN KEY(CookBook_ID) REFERENCES cookbook(CookBook_ID) ON DELETE CASCADE,
     FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
     PRIMARY KEY (CookBook_ID, recipe_name)
 );
 
-CREATE TABLE IF NOT EXISTS deletes (
-    Admin_ID INTEGER,
-    recipe_name VARCHAR(80),
-    FOREIGN KEY(Admin_ID) REFERENCES admin(Account_ID) ON DELETE CASCADE,
-    FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
-    PRIMARY KEY (Admin_ID, recipe_name)
-);
+--CREATE TABLE IF NOT EXISTS deletes (
+--    Admin_ID INTEGER,
+--    recipe_name VARCHAR(80),
+--    FOREIGN KEY(Admin_ID) REFERENCES admin(Account_ID) ON DELETE CASCADE,
+--    FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
+--    PRIMARY KEY (Admin_ID, recipe_name)
+--);
 
-CREATE TABLE IF NOT EXISTS creates (
-    User_ID INTEGER, 
-    recipe_name VARCHAR(80),
-    FOREIGN KEY(User_ID) REFERENCES users(Account_ID) ON DELETE CASCADE,
-    FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
-    PRIMARY KEY (User_ID, recipe_name)
-);
+--CREATE TABLE IF NOT EXISTS creates (
+--    User_ID INTEGER, 
+--    recipe_name VARCHAR(80),
+--    FOREIGN KEY(User_ID) REFERENCES users(Account_ID) ON DELETE CASCADE,
+--    FOREIGN KEY(recipe_name) REFERENCES recipe(recipe_name) ON DELETE CASCADE,
+--    PRIMARY KEY (User_ID, recipe_name)
+--);
 
 CREATE TABLE IF NOT EXISTS rates (
     User_ID INTEGER NOT NULL,

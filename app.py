@@ -293,8 +293,12 @@ def delete_account():
         # Delete corresponding rows from user_restrictions table
         conn.execute('DELETE FROM user_restrictions WHERE User_ID = ?', (user_id,))
         
+        #Delete Cookbook
+        conn.execute('DELETE FROM cookbook WHERE CookBook_ID = ?', (user_id,))
+
         # Delete account from account table
         conn.execute('DELETE FROM account WHERE id = ?', (user_id,))
+
         
         conn.commit()
         
@@ -406,7 +410,14 @@ def delete_recipe(recipe_name):
             conn.commit()
             conn.execute('DELETE FROM recipe_restrictions WHERE recipe_name = ?', (recipe_name,))
             conn.commit()
+
+            conn.execute('DELETE FROM rates WHERE recipe_name = ?', (recipe_name,))
+            conn.commit()
+            conn.execute('DELETE FROM contains WHERE recipe_name = ?', (recipe_name,))
+            conn.commit()
             conn.execute('DELETE FROM ingredients WHERE recipe_name = ?', (recipe_name,))
+            conn.commit()
+            conn.execute('DELETE FROM rates WHERE recipe_name = ?', (recipe_name,))
             conn.commit()
             response = {'message': 'Recipe deleted successfully'}
             status_code = 200
@@ -496,12 +507,12 @@ def save_to_cookbook(recipe_name):
             conn.execute('INSERT INTO cookbook (CookBook_ID) VALUES (?)', (user_id,))
 
         # Check if the recipe is already saved
-        exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
+        exists = conn.execute('SELECT 1 FROM contains WHERE CookBook_ID = ? AND recipe_name = ?', (user_id, recipe_name)).fetchone()
         if exists:
             return jsonify({'message': 'Recipe already in cookbook.'}), 409
 
-        # Save the recipe into the favorite_recipes table
-        conn.execute('INSERT INTO favorite_recipes (CookBook_ID, Crecipe_name) VALUES (?, ?)', (user_id, recipe_name))
+        # Save the recipe into the contains table
+        conn.execute('INSERT INTO contains (CookBook_ID, recipe_name) VALUES (?, ?)', (user_id, recipe_name))
         conn.commit()
         return jsonify({'message': 'Recipe saved to your cookbook!'}), 200
     except sqlite3.IntegrityError as e:
@@ -523,7 +534,7 @@ def cookbook():
             WHERE r.UserID = ? 
             UNION
             SELECT r.* FROM recipe r
-            JOIN favorite_recipes fr ON fr.Crecipe_name = r.recipe_name
+            JOIN contains fr ON fr.recipe_name = r.recipe_name
             JOIN cookbook c ON fr.CookBook_ID = c.CookBook_ID
             WHERE c.CookBook_ID = ?
         ''', (user_id, user_id)).fetchall()
@@ -547,14 +558,14 @@ def toggle_cookbook(recipe_name):
         conn.execute('INSERT OR IGNORE INTO cookbook (CookBook_ID) VALUES (?)', (user_id,))
 
         # Check if the recipe is already saved
-        exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
+        exists = conn.execute('SELECT 1 FROM contains WHERE CookBook_ID = ? AND recipe_name = ?', (user_id, recipe_name)).fetchone()
         if exists:
             # Delete the recipe from the cookbook
-            conn.execute('DELETE FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name))
+            conn.execute('DELETE FROM contains WHERE CookBook_ID = ? AND recipe_name = ?', (user_id, recipe_name))
             message = 'Recipe removed from your cookbook.'
         else:
             # Save the recipe into the cookbook
-            conn.execute('INSERT INTO favorite_recipes (CookBook_ID, Crecipe_name) VALUES (?, ?)', (user_id, recipe_name))
+            conn.execute('INSERT INTO contains (CookBook_ID, recipe_name) VALUES (?, ?)', (user_id, recipe_name))
             message = 'Recipe saved to your cookbook!'
 
         conn.commit()
@@ -572,7 +583,7 @@ def check_cookbook(recipe_name):
 
     user_id = session['user_id']
     conn = get_db_connection()
-    exists = conn.execute('SELECT 1 FROM favorite_recipes WHERE CookBook_ID = ? AND Crecipe_name = ?', (user_id, recipe_name)).fetchone()
+    exists = conn.execute('SELECT 1 FROM contains WHERE CookBook_ID = ? AND recipe_name = ?', (user_id, recipe_name)).fetchone()
     conn.close()
     return jsonify({'in_cookbook': bool(exists)}), 200
 
