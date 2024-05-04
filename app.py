@@ -85,18 +85,29 @@ def logout():
 
 @app.route('/api/recipes')
 def get_recipes():
-    search_query = request.args.get('search', None)
+    search_query = request.args.get('search', '')
     conn = get_db_connection()
     try:
         if search_query:
-            # Use SQL LIKE to filter recipes by name that contains the search query
-            recipes = conn.execute('SELECT * FROM recipe WHERE recipe_name LIKE ?', ('%' + search_query + '%',)).fetchall()
+            recipes = conn.execute('''
+                SELECT r.*, COALESCE(AVG(rates.user_rating), 0) as avg_rating
+                FROM recipe r
+                LEFT JOIN rates ON rates.recipe_name = r.recipe_name
+                WHERE r.recipe_name LIKE ?
+                GROUP BY r.recipe_name
+            ''', ('%' + search_query + '%',)).fetchall()
         else:
-            # Fetch all recipes if no search query is provided
-            recipes = conn.execute('SELECT * FROM recipe').fetchall()
+            recipes = conn.execute('''
+                SELECT r.*, COALESCE(AVG(rates.user_rating), 0) as avg_rating
+                FROM recipe r
+                LEFT JOIN rates ON rates.recipe_name = r.recipe_name
+                GROUP BY r.recipe_name
+            ''').fetchall()
+        recipes = [dict(recipe) for recipe in recipes]
+        return jsonify({'recipes': recipes})
     finally:
         conn.close()
-    return jsonify({'recipes': [dict(recipe) for recipe in recipes]})
+
 
 
 @app.route('/dashboard', methods=['GET'])
