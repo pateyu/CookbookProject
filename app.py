@@ -598,6 +598,7 @@ def check_cookbook(recipe_name):
     conn.close()
     return jsonify({'in_cookbook': bool(exists)}), 200
 
+
 @app.route('/rate-recipe', methods=['POST'])
 def rate_recipe():
     if 'user_id' not in session:
@@ -618,6 +619,53 @@ def rate_recipe():
     finally:
         conn.close()
     return jsonify({'message': 'Rating updated successfully'}), 200
+
+
+@app.route('/api/recommended')
+def recommended_recipes():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'You must be logged in to view recommendations.'}), 401
+
+    conn = get_db_connection()
+    try:
+        user_restrictions = conn.execute('SELECT UserRestriction FROM user_restrictions WHERE User_ID = ?', (user_id,)).fetchall()
+        user_restrictions = [row['UserRestriction'] for row in user_restrictions]
+
+        if user_restrictions:
+            # Correctly format placeholders for SQL query
+            placeholders = ','.join('?' for _ in user_restrictions)
+            query = f'''
+                SELECT DISTINCT r.*, COALESCE(AVG(ra.user_rating), 0) as avg_rating
+                FROM recipe r
+                JOIN recipe_restrictions rr ON r.recipe_name = rr.recipe_name
+                LEFT JOIN rates ra ON ra.recipe_name = r.recipe_name
+                WHERE rr.RecRestriction IN ({placeholders})
+                GROUP BY r.recipe_name
+                ORDER BY avg_rating DESC
+            '''
+            recipes = conn.execute(query, user_restrictions).fetchall()
+        else:
+            recipes = conn.execute('''
+                SELECT r.*, COALESCE(AVG(ra.user_rating), 0) as avg_rating
+                FROM recipe r
+                LEFT JOIN rates ra ON ra.recipe_name = r.recipe_name
+                GROUP BY r.recipe_name
+                ORDER BY avg_rating DESC
+            ''').fetchall()
+
+        recipes = [dict(recipe) for recipe in recipes]
+        return jsonify({'recipes': recipes})
+    finally:
+        conn.close()
+
+
+
+@app.route('/recommended')
+def recommended():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('recommended.html')
 
 
 if __name__ == '__main__':
