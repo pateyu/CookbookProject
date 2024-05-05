@@ -545,7 +545,7 @@ def cookbook():
             WHERE r.UserID = ? 
             UNION
             SELECT r.* FROM recipe r
-            JOIN contains fr ON fr.recipe_name = r.recipe_name
+            JOIN contains fr ON REPLACE(fr.recipe_name, '-', ' ') = r.recipe_name
             JOIN cookbook c ON fr.CookBook_ID = c.CookBook_ID
             WHERE c.CookBook_ID = ?
         ''', (user_id, user_id)).fetchall()
@@ -553,6 +553,7 @@ def cookbook():
         conn.close()
 
     return render_template('cookbook.html', recipes=recipes)
+
 
 
 
