@@ -632,8 +632,16 @@ def recommended_recipes():
         user_restrictions = conn.execute('SELECT UserRestriction FROM user_restrictions WHERE User_ID = ?', (user_id,)).fetchall()
         user_restrictions = [row['UserRestriction'] for row in user_restrictions]
 
-        if user_restrictions:
-            # Correctly format placeholders for SQL query
+        if 'None' in user_restrictions:
+            # If 'None' is among user restrictions, return all recipes
+            recipes = conn.execute('''
+                SELECT r.*, COALESCE(AVG(ra.user_rating), 0) as avg_rating
+                FROM recipe r
+                LEFT JOIN rates ra ON ra.recipe_name = r.recipe_name
+                GROUP BY r.recipe_name
+                ORDER BY avg_rating DESC
+            ''').fetchall()
+        elif user_restrictions:
             placeholders = ','.join('?' for _ in user_restrictions)
             query = f'''
                 SELECT DISTINCT r.*, COALESCE(AVG(ra.user_rating), 0) as avg_rating
@@ -641,10 +649,18 @@ def recommended_recipes():
                 JOIN recipe_restrictions rr ON r.recipe_name = rr.recipe_name
                 LEFT JOIN rates ra ON ra.recipe_name = r.recipe_name
                 WHERE rr.RecRestriction IN ({placeholders})
+                AND r.recipe_name IN (
+                    SELECT r2.recipe_name
+                    FROM recipe r2
+                    JOIN recipe_restrictions rr2 ON r2.recipe_name = rr2.recipe_name
+                    WHERE rr2.RecRestriction IN ({placeholders})
+                    GROUP BY r2.recipe_name
+                    HAVING COUNT(*) = {len(user_restrictions)}
+                )
                 GROUP BY r.recipe_name
                 ORDER BY avg_rating DESC
             '''
-            recipes = conn.execute(query, user_restrictions).fetchall()
+            recipes = conn.execute(query, user_restrictions + user_restrictions).fetchall()
         else:
             recipes = conn.execute('''
                 SELECT r.*, COALESCE(AVG(ra.user_rating), 0) as avg_rating
@@ -658,6 +674,8 @@ def recommended_recipes():
         return jsonify({'recipes': recipes})
     finally:
         conn.close()
+
+
 
 
 
