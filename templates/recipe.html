@@ -69,6 +69,7 @@
                 <div class="flex space-x-2 mt-4">
                     {% if session['user_id'] or session.get('is_admin', False) %}
                     <button id="cookbookButton" onclick="toggleCookbook('{{ recipe.recipe_name | replace(' ', '-') }}')" class="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded">Save to Cookbook</button>
+                    <button onclick="location.href='/dashboard';" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded">Back to Dashboard</button>                    
                     {% endif %}
                     {% if session['user_id'] == recipe.UserID or session.get('is_admin', False) %}
                     <button onclick="location.href='/edit-recipe/{{ recipe.recipe_name | replace(' ', '-') }}';" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">Edit Recipe</button>
