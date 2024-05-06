@@ -241,7 +241,7 @@ def update_security_key():
                     conn.execute('DELETE FROM users WHERE Account_ID = ?', (user_id,))
                     conn.commit()
 
-                    response = {'message': 'User granted admin privileges'}
+                    response = {'message': 'User granted admin privileges. Sign in to view changes.'}
                 else:
                     response = {'message': 'User not found'}
                     status_code = 404
