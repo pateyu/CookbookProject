@@ -130,18 +130,21 @@ INSERT OR IGNORE INTO cuisine (Cuisine_ID) VALUES
 ('American'),
 ('Mexican'),
 ('Indian'),
+('Italian'),
+('Greek'),
+('Chinese'),
 ('Breakfast'),
-('Lunch'),
-('Dinner'),
+('Salad'),
+('Soup'),
 ('Dessert');
 
 -- Insert into 'regional_cuisine' only if the cuisine does not already exist
 INSERT OR IGNORE INTO regional_cuisine (region_desc, Cuisine_ID) VALUES
 ('North American cuisine includes foods like burgers and barbecue', 'American'),
 ('Mexican cuisine features staples like tacos and enchiladas', 'Mexican'),
-('Indian cuisine tantalizes taste buds with its vibrant array of aromatic spices, rich flavors, and diverse regional specialties, reflecting a culinary heritage steeped in tradition and innovation.', 'Indian');
-('Italian cuisine is a harmonious fusion of fresh, high-quality ingredients and simple cooking techniques, celebrated for its rich flavors and regional diversity.', 'Italian');
-('Greek cuisine shows the vibrant flavors of the Mediterranean with its emphasis on fresh vegetables, olive oil, herbs, and grilled meats, reflecting a balance of tradition and innovation.', 'Greek');
+('Indian cuisine tantalizes taste buds with its vibrant array of aromatic spices, rich flavors, and diverse regional specialties, reflecting a culinary heritage steeped in tradition and innovation.', 'Indian'),
+('Italian cuisine is a harmonious fusion of fresh, high-quality ingredients and simple cooking techniques, celebrated for its rich flavors and regional diversity.', 'Italian'),
+('Greek cuisine shows the vibrant flavors of the Mediterranean with its emphasis on fresh vegetables, olive oil, herbs, and grilled meats, reflecting a balance of tradition and innovation.', 'Greek'),
 ('Chinese cuisine captivates the palate with its diverse range of flavors, from savory and spicy to sweet and sour, all expertly balanced with fresh ingredients and centuries-old cooking techniques.', 'Chinese');
 
 
